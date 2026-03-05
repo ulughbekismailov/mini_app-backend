@@ -1,0 +1,145 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: drf_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    container_name: drf_django
+    restart: unless-stopped
+    expose:
+      - "8000"
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn your_project.wsgi:application --bind 0.0.0.0:8000 --workers 3"
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      IS_DOCKER: "True"
+      DB_HOST: db
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - logs_volume:/app/logs
+    networks:
+      - app_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    container_name: drf_bot
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      django:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DJANGO_HOST: django
+      DJANGO_PORT: 8000
+      IS_DOCKER: "True"
+    volumes:
+      - logs_volume:/app/logs
+    networks:
+      - app_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  nginx:
+    image: nginx:alpine
+    container_name: drf_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/static:ro
+      - media_volume:/media:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro   # SSL sertifikatlar
+    depends_on:
+      - django
+    networks:
+      - app_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+
+volumes:
+  postgres_data:
+    name: drf_postgres_data
+  static_volume:
+    name: drf_static_volume
+  media_volume:
+    name: drf_media_volume
+  logs_volume:
+    name: drf_logs_volume
+
+networks:
+  app_network:
+    name: drf_app_network
+    driver: bridge

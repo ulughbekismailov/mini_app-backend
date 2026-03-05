@@ -1,0 +1,54 @@
+FROM python:3.10-slim
+
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    libpq-dev \
+    netcat-openbsd \
+    --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+RUN echo '#!/bin/sh\n\
+set -e\n\
+\n\
+echo "========================================="\n\
+echo "🤖 TELEGRAM BOT STARTER"\n\
+echo "========================================="\n\
+\n\
+# Ma'lumotlar bazasini kutish\n\
+echo "🔄 Waiting for database... ($DB_HOST:$DB_PORT)"\n\
+while ! nc -z $DB_HOST $DB_PORT; do\n\
+  sleep 1\n\
+done\n\
+echo "✅ Database is ready!"\n\
+\n\
+# Agar Django API kerak bo'lsa (ixtiyoriy)\n\
+if [ ! -z "$DJANGO_HOST" ] && [ ! -z "$DJANGO_PORT" ]; then\n\
+  echo "🔄 Waiting for Django server... ($DJANGO_HOST:$DJANGO_PORT)"\n\
+  while ! nc -z $DJANGO_HOST $DJANGO_PORT; do\n\
+    sleep 2\n\
+  done\n\
+  echo "✅ Django server is ready!"\n\
+fi\n\
+\n\
+echo "========================================="\n\
+echo "✅ Telegram bot is starting..."\n\
+echo "========================================="\n\
+\n\
+exec python manage.py runbot\n\
+' > /entrypoint.sh && chmod +x /entrypoint.sh
+
+# 8. Entrypoint ni belgilash
+ENTRYPOINT ["/entrypoint.sh"]
