@@ -30,7 +30,5 @@ urlpatterns = [
     path('admin/dashboard/stats/', DashboardStatsView.as_view()),
     path('admin/dashboard/top-products/', TopProductsView.as_view()),
     path('admin/dashboard/monthly-orders/', MonthlyOrdersView.as_view()),
-
-    path("ht/", include("health_check.urls")),
 ]
 

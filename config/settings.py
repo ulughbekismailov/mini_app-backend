@@ -8,6 +8,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+HEALTH_CHECK_TOKEN = os.environ.get('HEALTH_CHECK_TOKEN', 'default-fallback-token')
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
@@ -37,6 +38,9 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
+HEALTH_CHECK = {
+    'DISABLE_THREADING': True,
+}
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -65,10 +69,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'health_check',
-    'health_check.db',
+    'health_check',                         
+    'health_check.db',               
     'health_check.cache',
     'health_check.storage',
+    'health_check.contrib.migrations',
 
     # Third party apps
     'rest_framework',

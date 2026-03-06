@@ -9,6 +9,7 @@ class CustomPagination(PageNumberPagination):
     page_size = 5
 
 
+
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
