@@ -52,8 +52,6 @@ urlpatterns = [
     # Swagger URLs
     path('', schema_view.with_ui('swagger', cache_timeout=0)),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0)),
-
-    path(f'ht/{settings.HEALTH_CHECK_TOKEN}/', include('health_check.urls')),
 ]
 
 
