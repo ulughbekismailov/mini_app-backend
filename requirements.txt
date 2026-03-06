@@ -1,8 +1,9 @@
 # Asosiy
 Django==5.2.1
 djangorestframework==3.16.1
-psycopg2==2.9.9
+psycopg2-binary==2.9.11
 gunicorn==21.2.0
+django-health-check==3.18.1
 
 # Auth
 djoser==2.3.3

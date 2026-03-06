@@ -10,8 +10,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
-if not SECRET_KEY:
-    raise ValueError("❌ DJANGO_SECRET_KEY environment variable is not set!")
 
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
@@ -20,11 +18,9 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').sp
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
-if not TELEGRAM_BOT_TOKEN and not DEBUG:
-    raise ValueError("❌ TELEGRAM_BOT_TOKEN environment variable is not set!")
 
 TELEGRAM_BOT_WEBHOOK_URL = os.environ.get('TELEGRAM_BOT_WEBHOOK_URL', '')
-MINI_APP_URL = os.environ.get('MINI_APP_URL', 'https://app-vercel-drab.vercel.app')
+MINI_APP_URL = os.environ.get('MINI_APP_URL')
 
 
 SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'False') == 'True'
