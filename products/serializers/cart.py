@@ -17,7 +17,10 @@ class CartItemSerializer(serializers.ModelSerializer):
     def get_main_image(self, obj):
         image = obj.product.main_image
         if image:
-            return image
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(image.image.url)
+            return image.image.url
         return None
 
 class CartSerializer(serializers.ModelSerializer):

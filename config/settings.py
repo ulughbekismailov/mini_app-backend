@@ -11,7 +11,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
+# DEBUG = True
 
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",   # Vite default porti
+#     "http://127.0.0.1:5173",
+#     # Agar kerak bo‘lsa, boshqa manzillarni ham qo‘shing
+# ]
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
